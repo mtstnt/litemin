@@ -24,7 +24,10 @@ func Setup() *chi.Mux {
 	fmt.Printf("Excluded Directory Name: %+v\n", dirNames)
 
 	mux := chi.NewMux()
-	mux.Handle("/", FSPreRequestHandler("dist", dirNames, http.FileServer(http.FS(view.FS))))
+	mux.HandleFunc("/api", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "api")
+	})
+	mux.Handle("/*", FSPreRequestHandler("dist", dirNames, http.FileServerFS(view.FS)))
 
 	return mux
 }
@@ -37,6 +40,7 @@ func FSPreRequestHandler(prefix string, excludeDirNames []string, h http.Handler
 
 		// Don't prepend prefix on API endpoints.
 		if strings.HasPrefix(r.URL.Path, "/api") {
+			fmt.Println(r.URL.Path)
 			h.ServeHTTP(w, r)
 			return
 		}
@@ -46,7 +50,7 @@ func FSPreRequestHandler(prefix string, excludeDirNames []string, h http.Handler
 		// has an additional "dist" directory in the root.
 		isPublicDirectoryAccess := false
 
-		if r.URL.Path == "/" || r.URL.Path == "" {
+		if r.URL.Path == "/" || r.URL.Path == "" || strings.HasPrefix(r.URL.Path, "/dist") {
 			isPublicDirectoryAccess = true
 		}
 
@@ -64,11 +68,14 @@ func FSPreRequestHandler(prefix string, excludeDirNames []string, h http.Handler
 			*r2.URL = *r.URL
 			r2.URL.Path = prefix + r.URL.Path
 			r2.URL.RawPath = prefix + r.URL.RawPath
-			h.ServeHTTP(w, r2)
+			r = r2
+			fmt.Println(r.URL.Path)
+			h.ServeHTTP(w, r)
 			return
 		}
 
 		// If not a public access, render index.html, but keep the URL so React Router can catch that.
+		fmt.Println(r.URL.Path)
 		http.ServeFileFS(w, r, view.FS, "dist/index.html")
 	})
 }

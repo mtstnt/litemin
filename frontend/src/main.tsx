@@ -1,7 +1,7 @@
 import ReactDOM from 'react-dom/client'
 import { RouterProvider, createBrowserRouter } from 'react-router-dom'
-import { Home } from './pages/Home.tsx'
-import { About } from './pages/About.tsx'
+import { GlobalView } from './pages/GlobalView.tsx'
+import { DatabaseView } from './pages/DatabaseView.tsx'
 
 // Tailwind & custom styles.
 import './styles/index.css';
@@ -9,11 +9,11 @@ import './styles/index.css';
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Home />,
+    element: <GlobalView />,
   },
   {
-    path: "/about",
-    element: <About />,
+    path: "/database/:slug",
+    element: <DatabaseView />,
   }
 ])
 
